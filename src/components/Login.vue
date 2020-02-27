@@ -4,19 +4,21 @@
             <div class="avatar_box">
                 <img src="../assets/logo.png" alt="../assets/logo.png">
             </div>
-            <el-form label-width="0px" class="login_form">
+            <!--ref指定实例-->
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules" label-width="0px" class="login_form">
                 <!--用户名-->
-                <el-form-item>
-                    <el-input prefix-icon="el-icon-user"></el-input>
+                <el-form-item prop="username">
+                    <el-input v-model="loginForm.username" prefix-icon="el-icon-user"></el-input>
                 </el-form-item>
                 <!--密码-->
-                <el-form-item>
-                    <el-input prefix-icon="el-icon-lock"></el-input>
+                <el-form-item prop="password">
+                    <el-input type="password" v-model="loginForm.password" prefix-icon="el-icon-lock"></el-input>
                 </el-form-item>
                 <!--按钮-->
                 <el-form-item class="buttons">
-                    <el-button type="primary">登录</el-button>
-                    <el-button type="info">重置</el-button>
+                    <el-button type="primary" @click="login">登录</el-button>
+                    <!--绑定重置事件-->
+                    <el-button type="info" @click="resetLoginForm">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -25,7 +27,39 @@
 
 <script>
     export default {
-        name: "Login"
+        data() {
+            return {
+                // 用户名密码双向数据绑定
+                loginForm: {
+                    username: '',
+                    password: '',
+                },
+                loginFormRules: {
+                    username: [
+                        {required: true, message: '请输入用户名', trigger: 'blur'},
+                        {min: 5, max: 10, message: '长度在 5 到 10 个字符', trigger: 'blur'}
+                    ],
+                    password: [
+                        {required: true, message: '请输入密码', trigger: 'blur'},
+                        {min: 10, max: 15, message: '长度在 10 到 15 个字符', trigger: 'blur'}
+                    ]
+                }
+            }
+        },
+        methods: {
+            // 表单验证
+            resetLoginForm() {
+                this.$refs.loginFormRef.resetFields();
+            },
+            // 表单预验证
+            login() {
+                this.$refs.loginFormRef.validate(valid => {
+                    // console.log(valid);
+                    if (!valid) return;
+
+                })
+            }
+        }
     }
 </script>
 
@@ -66,11 +100,13 @@
             background-color: #eeeeee;
         }
     }
-    .buttons{
+
+    .buttons {
         display: flex;
         justify-content: flex-end;
     }
-    .login_form{
+
+    .login_form {
         position: absolute;
         bottom: 0;
         width: 100%;

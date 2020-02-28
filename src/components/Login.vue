@@ -8,11 +8,11 @@
             <el-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules" label-width="0px" class="login_form">
                 <!--用户名-->
                 <el-form-item prop="username">
-                    <el-input v-model="loginForm.username" prefix-icon="el-icon-user"></el-input>
+                    <el-input v-model="loginForm.username" prefix-icon="el-icon-user"/>
                 </el-form-item>
                 <!--密码-->
                 <el-form-item prop="password">
-                    <el-input type="password" v-model="loginForm.password" prefix-icon="el-icon-lock"></el-input>
+                    <el-input type="password" v-model="loginForm.password" prefix-icon="el-icon-lock"/>
                 </el-form-item>
                 <!--按钮-->
                 <el-form-item class="buttons">
@@ -31,8 +31,8 @@
             return {
                 // 用户名密码双向数据绑定
                 loginForm: {
-                    username: '',
-                    password: '',
+                    username: '920201895',
+                    password: '1234567890',
                 },
                 loginFormRules: {
                     username: [
@@ -53,10 +53,16 @@
             },
             // 表单预验证
             login() {
-                this.$refs.loginFormRef.validate(valid => {
-                    // console.log(valid);
+                this.$refs.loginFormRef.validate(async valid => {
                     if (!valid) return;
-
+                    const result = await this.$http.post("/admin/login", this.loginForm);
+                    console.log(result);
+                    if (result.data !== true) return this.$message.error("用户名或密码错误！");
+                    this.$message.success("登录成功！");
+                    //todo 将登录信息存入session
+                    window.sessionStorage.setItem("token", "result.data.token");
+                    // 跳转页面
+                    await this.$router.push('/home')
                 })
             }
         }

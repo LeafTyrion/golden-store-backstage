@@ -55,11 +55,11 @@
             login() {
                 this.$refs.loginFormRef.validate(async valid => {
                     if (!valid) return;
-                    const result = await this.$http.post("/admin/login", this.loginForm);
+                    const result = await this.$http.post("http://127.0.0.1:8081/admin/login", this.loginForm);
                     console.log(result);
                     if (result.data !== true) return this.$message.error("用户名或密码错误！");
                     this.$message.success("登录成功！");
-                    //todo 将登录信息存入session
+                    //todo 将token登录信息存入session
                     window.sessionStorage.setItem("token", "result.data.token");
                     // 跳转页面
                     await this.$router.push('/home')

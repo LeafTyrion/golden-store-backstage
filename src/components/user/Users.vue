@@ -49,7 +49,7 @@
             </el-table>
             <!--分页区域-->
             <el-pagination @size-change="handleSizeChange"
-                           @current_change="handleCurrentChange"
+                           @current-change="handleCurrentChange"
                            :current-page="queryInfo.pagenum"
                            :page-sizes="[1,2,5,10]"
                            :page-size="queryInfo.pagesize"

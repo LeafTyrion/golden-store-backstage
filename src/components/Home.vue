@@ -3,7 +3,7 @@
         <!--头部区域-->
         <el-header>
             <div>
-                <img src="../assets/logo.png" alt="../assets/logo.png">
+                <img src="../assets/logo.png" alt="../assets/logo.png"/>
                 <span>电商后台管理系统</span>
             </div>
             <el-button type="info" @click="logout">退出</el-button>
@@ -14,7 +14,7 @@
             <el-aside :width="isCollapse?'64px':'200px'">
                 <!--菜单折叠展开按钮-->
                 <div class="toggle-button" @click="toggleCollapse">|||</div>
-                <!--侧边栏菜单,选中颜色，只能展开一个菜单设置,菜单折叠展开设置,折叠动画关闭-->
+                <!--侧边栏菜单,选中颜色，只能展开一个菜单设置,菜单折叠展开设置,折叠动画关闭,默认选中状态等-->
                 <el-menu
                         background-color="#545c64"
                         text-color="#fff"
@@ -23,11 +23,18 @@
                         :collapse="isCollapse"
                         :collapse-transition="false"
                         :router="true"
-                        :default-active="activePath">
+                        default-active="/index">
+                    <el-menu-item index="/index" @click="saveNavState('/index')">
+                        <!--二级菜单模板区域-->
+                        <!--图标-->
+                        <i class="el-icon-s-home"/>
+                        <span slot="title">首页</span>
+                    </el-menu-item>
                     <!--一级菜单-->
-                    <el-submenu :index="name"
-                                v-for="{id, name, submenuList} in menulist"
-                                :key="id">
+                    <el-submenu
+                            :index="name"
+                            v-for="{id, name, submenuList} in menuList"
+                            :key="id">
                         <!--一级菜单模板区域-->
                         <template slot="title">
                             <!--图标-->
@@ -35,10 +42,11 @@
                             <span>{{name}}</span>
                         </template>
                         <!--二级菜单-->
-                        <el-menu-item :index="subItem.path"
-                                      v-for="subItem in (submenuList)"
-                                      :key="subItem.id"
-                                      @click="saveNavState(subItem.path)">
+                        <el-menu-item
+                                :index="subItem.path"
+                                v-for="subItem in (submenuList)"
+                                :key="subItem.id"
+                                @click="saveNavState(subItem.path)">
                             <!--二级菜单模板区域-->
                             <template slot="title">
                                 <!--图标-->
@@ -59,15 +67,14 @@
 
 <script>
     export default {
-
         data() {
             return {
-                menulist: [],
+                menuList: [],
 
                 isCollapse: false,
 
-                activePath: ''
-            }
+                activePath: ""
+            };
         },
 
         created() {
@@ -82,12 +89,10 @@
             },
 
             async getMenuList() {
-                const result = await this.$http.get("http://127.0.0.1:8082/menu/allMenu");
+                const result = (await this.$http.get("http://127.0.0.1:8082/menu/allMenu"));
                 if (result.status !== 200) return this.$message.error("请求服务器错误！");
                 console.log(result);
-                this.menulist = result.data
-
-
+                this.menuList = result.data;
             },
             // 菜单折叠展开按钮
             toggleCollapse() {
@@ -95,16 +100,14 @@
             },
 
             saveNavState(activePath) {
-                window.sessionStorage.setItem('activePath', activePath);
+                window.sessionStorage.setItem("activePath", activePath);
                 this.activePath = activePath;
-            }
-
+            },
         }
-    }
+    };
 </script>
 
 <style lang="less" scoped>
-
     .home-container {
         height: 100%;
     }
@@ -152,4 +155,5 @@
         text-align: center;
         letter-spacing: 0.5em;
     }
+
 </style>

@@ -55,14 +55,25 @@
             login() {
                 this.$refs.loginFormRef.validate(async valid => {
                     if (!valid) return;
-                    const result = await this.$http.post("http://127.0.0.1:8081/admin/login", this.loginForm);
-                    console.log(result);
-                    if (result.data !== true) return this.$message.error("用户名或密码错误！");
-                    this.$message.success("登录成功！");
-                    //todo 将token登录信息存入session
-                    window.sessionStorage.setItem("token", "result.data.token");
-                    // 跳转页面
-                    await this.$router.push('/home')
+
+                    try {
+                        const result = await this.$http.post("http://127.0.0.1:8081/admin/login", this.loginForm);
+                        console.log(result);
+                        const data = result.data;
+                        if (data.success !== true) return this.$message.error("用户名或密码错误");
+                        if (data.success === true) {
+                            this.$message.success("登录成功");
+                            //todo 将token登录信息存入session
+                            window.sessionStorage.setItem("token", data.token);
+                            // 跳转页面
+                            await this.$router.push('/home')
+                        }
+                    } catch (e) {
+                        console.log(e);
+                        this.$message.error("服务暂不可用，请稍后再试")
+                    }
+
+
                 })
             }
         }

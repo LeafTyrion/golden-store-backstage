@@ -2,12 +2,22 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from "../components/Login";
 import Home from "../components/Home";
-import Welcome from "../components/Welcome";
-import Goods from "../components/Goods/Goods";
+import Index from "../components/index/Index";
+import Goods from "../components/goods/Goods";
+import Category from "../components/goods/Category";
+import Admin from "../components/user/Admin";
+import Orders from "../components/orders/Orders";
+import Test from "../components/Test";
+import Users from "../components/user/Users";
 
 Vue.use(VueRouter);
 
 const routes = [
+    {
+        path: '/test',
+        name: 'Test',
+        component: Test
+    },
     {
         path: '/login',
         name: 'Login',
@@ -17,12 +27,17 @@ const routes = [
         path: '/home',
         name: 'Home',
         component: Home,
-        redirect: '/welcome',
+        redirect: '/index',
         children: [
-            {path: '/welcome', component: Welcome},
-            {path: '/addGoods', component: Goods}
+            {path: '/index', component: Index},
+            {path: '/admins', component: Admin},
+            {path: '/users', component: Users},
+            {path: '/goods', component: Goods},
+            {path: '/categories', component: Category},
+            {path: '/orders', component: Orders},
         ]
-    }
+    },
+
 ];
 
 const router = new VueRouter({

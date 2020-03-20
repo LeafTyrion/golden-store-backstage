@@ -23,7 +23,7 @@
                         :collapse="isCollapse"
                         :collapse-transition="false"
                         :router="true"
-                        default-active="/index">
+                        :default-active="activePath?activePath:'/index'">
                     <el-menu-item index="/index" @click="saveNavState('/index')">
                         <!--二级菜单模板区域-->
                         <!--图标-->

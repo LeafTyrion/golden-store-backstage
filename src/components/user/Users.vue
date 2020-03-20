@@ -2,7 +2,7 @@
     <div>
         <!--面包屑导航-->
         <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/index' }">首页</el-breadcrumb-item>
             <el-breadcrumb-item>活动管理</el-breadcrumb-item>
             <el-breadcrumb-item>活动列表</el-breadcrumb-item>
             <el-breadcrumb-item>活动详情</el-breadcrumb-item>
@@ -12,13 +12,9 @@
             <el-row :gutter="20">
                 <!--搜索区域-->
                 <el-col :span="7">
-                    <el-input placeholder="请输入内容">
-                        <el-button slot="append" icon="el-icon-search"></el-button>
+                    <el-input placeholder="请输入内容" v-model="queryInfo.query">
+                        <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
                     </el-input>
-                </el-col>
-                <!--按钮区域-->
-                <el-col :span="4">
-                    <el-button type="primary">添加用户</el-button>
                 </el-col>
             </el-row>
             <!--列表区域-->
@@ -36,7 +32,7 @@
                 <el-table-column label="操作" width="200px">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" content="编辑" placement="top" :enterable="false">
-                            <el-button type="primary" icon="el-icon-edit" size="mini"/>
+                            <el-button type="primary" icon="el-icon-edit" size="mini" @click="dialogVisible=true"/>
                         </el-tooltip>
                         <el-tooltip effect="dark" content="删除" placement="top" :enterable="false">
                             <el-button type="danger" icon="el-icon-delete" size="mini"/>
@@ -56,6 +52,18 @@
                            layout="total,sizes,prev,pager,next,jumper"
                            :total="total"/>
         </el-card>
+
+        <!--添加用户对话框-->
+        <el-dialog
+                title="查看客户信息"
+                :visible.sync="dialogVisible"
+                width="50%">
+            <span>这是一段信息</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -72,6 +80,8 @@
                 },
                 userList: [],
                 total: 0,
+                // 控制对话框打开关闭
+                dialogVisible: false
             }
         },
         created() {

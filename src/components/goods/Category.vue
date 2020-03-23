@@ -216,6 +216,7 @@
                 this.total = result.data.totalElements;
             },
             async getTypeById(row) {
+                console.log(row);
                 this.viewDialogVisible = true;
             },
 

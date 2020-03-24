@@ -111,13 +111,10 @@
                 queryInfo: {
                     page: 1,
                     size: 10,
-                    query: '',
+                    query: null,
                 },
                 total: 0,
                 typeList: [],
-
-                // 查询内容
-                queryString: '',
 
                 // 控制对话框打开关闭
                 addDialogVisible: false,
@@ -210,7 +207,7 @@
                 const result = await this.$http.get("http://127.0.0.1:8084/type/allType", {params: this.queryInfo});
                 console.log(result);
                 if (result.status !== 200) {
-                    return this.$message.error("获取用户列表失败")
+                    return this.$message.error("获取商品类型信息失败")
                 }
                 this.typeList = result.data.content;
                 this.total = result.data.totalElements;

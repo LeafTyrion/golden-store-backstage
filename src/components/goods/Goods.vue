@@ -23,8 +23,14 @@
             <!--列表区域-->
             <el-table :data="goodsList" border stripe>
                 <el-table-column type="index" label="#"/>
-                <el-table-column label="类型编号" prop="id"/>
-                <el-table-column label="类型名称" prop="name"/>
+                <el-table-column label="商品编号" prop="id"/>
+                <el-table-column label="商品名称" prop="name"/>
+                <el-table-column label="商品编号" prop="id"/>
+                <el-table-column label="商品名称" prop="name"/>
+                <el-table-column label="商品编号" prop="id"/>
+                <el-table-column label="商品名称" prop="name"/>
+                <el-table-column label="商品编号" prop="id"/>
+                <el-table-column label="商品名称" prop="name"/>
                 <!--操作区域-->
                 <el-table-column label="操作" width="200px">
                     <template slot-scope="scope">
@@ -66,7 +72,10 @@
                     <el-input v-model="goodsForm.stock"/>
                 </el-form-item>
                 <el-form-item label="商品类型" prop="type">
-                    <el-select v-model="goodsForm.type" value-key="id" filterable placeholder="请选择商品类型">
+                    <el-select v-model="goodsForm.type"
+                               value-key="id"
+                               filterable
+                               placeholder="请选择商品类型">
                         <el-option
                                 v-for="item in typeList"
                                 :value="item"
@@ -94,6 +103,24 @@
                     <el-input type="textarea" :autosize="{minRows:2,maxRows:5}"
                               v-model="goodsForm.detail"/>
                 </el-form-item>
+                <el-form-item label="商品图片">
+
+                </el-form-item>
+                <el-upload action="#"
+                           list-type="picture-card"
+                           :on-remove="handleRemove"
+                           :on-preview="handlePictureCardPreview"
+                           :http-request="addGoods"
+                           :multiple="true"
+                           :auto-upload="false"
+                           :limit=4
+                           :file-list="fileList">
+                    <i class="el-icon-plus"/>
+                    <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
+                </el-upload>
+                <el-dialog :visible.sync="dialogVisible">
+                    <img width="100%" :src="dialogImageUrl" alt="fuck">
+                </el-dialog>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="addDialogClosed">取 消</el-button>
@@ -144,6 +171,11 @@
                         {min: 2, max: 10, message: '商品类别长度在2-10个字符之间', trigger: 'blur'}
                     ],
                 },
+                //图片相关变量
+                dialogImageUrl: '',
+                dialogVisible: false,
+                uploadForm: new FormData(),
+                fileList: [],
             };
 
         },
@@ -183,11 +215,18 @@
                 this.editDialogVisible = false;
             },
             // 添加商品操作
-            addGoods() {
+            async addGoods(param) {
+                const formData = new FormData();
+                formData.append("file", param.file);
+
+                const result = await this.$http.post("http://127.0.0.1:8084/goods/uploadImages", formData);
+                console.log(result);
+
                 // 表单预校验
                 this.$refs.addFormRef.validate(async valid => {
                     if (!valid) return;
 
+                    // console.log("hhh" + this.imagesForm.get("images"));
                     const result = await this.$http.post(
                         "http://127.0.0.1:8084/goods/addGoods",
                         this.goodsForm);
@@ -219,6 +258,18 @@
             },
             deleteGoods(row) {
 
+            },
+            // 删除文件图片 file为被删除的文件 fileList是剩下的文件列表
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+            beforeUpload(file) {
+                this.uploadForm.append('file', file);
+                return false;
             }
 
         },

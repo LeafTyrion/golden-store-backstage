@@ -25,12 +25,11 @@
                 <el-table-column type="index" label="#"/>
                 <el-table-column label="商品编号" prop="id"/>
                 <el-table-column label="商品名称" prop="name"/>
-                <el-table-column label="商品编号" prop="id"/>
-                <el-table-column label="商品名称" prop="name"/>
-                <el-table-column label="商品编号" prop="id"/>
-                <el-table-column label="商品名称" prop="name"/>
-                <el-table-column label="商品编号" prop="id"/>
-                <el-table-column label="商品名称" prop="name"/>
+                <el-table-column label="状态" width="90px" prop="sell">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.sell" @change="goodsStateChanged(scope.row)"></el-switch>
+                    </template>
+                </el-table-column>
                 <!--操作区域-->
                 <el-table-column label="操作" width="200px">
                     <template slot-scope="scope">
@@ -58,10 +57,79 @@
                            layout="total,sizes,prev,pager,next,jumper"
                            :total="total"/>
         </el-card>
-        <!--添加商品类型对话框-->
+        <!--添加商品信息对话框-->
         <el-dialog
-                title="添加商品类型"
+                title="添加商品"
                 :visible.sync="addDialogVisible"
+                width="50%">
+            <!--主体内容区域-->
+            <el-form :model="goodsForm" :rules="goodsFormRules" ref="addFormRef" label-width="150px">
+                <el-form-item label="商品名称" prop="name">
+                    <el-input v-model="goodsForm.name"/>
+                </el-form-item>
+                <el-form-item label="库存数量" prop="stock">
+                    <el-input v-model="goodsForm.stock"/>
+                </el-form-item>
+                <el-form-item label="商品类型" prop="type">
+                    <el-select v-model="goodsForm.type"
+                               value-key="id"
+                               filterable
+                               placeholder="请选择商品类型">
+                        <el-option
+                                v-for="item in typeList"
+                                :value="item"
+                                :key="item.id"
+                                :label="item.name"/>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="成本价" prop="costPrice">
+                    <el-input v-model="goodsForm.costPrice"/>
+                </el-form-item>
+                <el-form-item label="批发价" prop="tradePrice">
+                    <el-input v-model="goodsForm.tradePrice"/>
+                </el-form-item>
+                <el-form-item label="建议零售价" prop="price">
+                    <el-input v-model="goodsForm.price"/>
+                </el-form-item>
+                <el-form-item label="每个批发单位数量" prop="numSpec">
+                    <el-input v-model="goodsForm.numSpec"/>
+                </el-form-item>
+                <el-form-item label="商品规格" prop="specification">
+                    <el-input v-model="goodsForm.specification"/>
+                </el-form-item>
+                <el-form-item label="商品详细信息" prop="detail">
+                    <el-input type="textarea" :autosize="{minRows:2,maxRows:5}"
+                              v-model="goodsForm.detail"/>
+                </el-form-item>
+                <el-form-item label="商品图片">
+                    <el-upload action="#"
+                               list-type="picture-card"
+                               ref="uploadRef"
+                               :on-remove="handleRemove"
+                               :on-preview="handlePictureCardPreview"
+                               :http-request="upLoadImages"
+                               :multiple="true"
+                               :auto-upload="false"
+                               :limit=4
+                               :file-list="fileList">
+                        <i class="el-icon-plus"/>
+                        <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
+                    </el-dialog>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addDialogClosed">取 消</el-button>
+                <el-button type="primary" @click="addGoods">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!--编辑修改商品信息对话框-->
+        <el-dialog
+                title="修改商品"
+                :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
             <el-form :model="goodsForm" :rules="goodsFormRules" ref="addFormRef" label-width="150px">
@@ -104,23 +172,23 @@
                               v-model="goodsForm.detail"/>
                 </el-form-item>
                 <el-form-item label="商品图片">
-
+                    <el-upload action="#"
+                               list-type="picture-card"
+                               ref="uploadRef"
+                               :on-remove="handleRemove"
+                               :on-preview="handlePictureCardPreview"
+                               :http-request="upLoadImages"
+                               :multiple="true"
+                               :auto-upload="false"
+                               :limit=4
+                               :file-list="fileList">
+                        <i class="el-icon-plus"/>
+                        <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
+                    </el-dialog>
                 </el-form-item>
-                <el-upload action="#"
-                           list-type="picture-card"
-                           :on-remove="handleRemove"
-                           :on-preview="handlePictureCardPreview"
-                           :http-request="addGoods"
-                           :multiple="true"
-                           :auto-upload="false"
-                           :limit=4
-                           :file-list="fileList">
-                    <i class="el-icon-plus"/>
-                    <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
-                </el-upload>
-                <el-dialog :visible.sync="dialogVisible">
-                    <img width="100%" :src="dialogImageUrl" alt="fuck">
-                </el-dialog>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="addDialogClosed">取 消</el-button>
@@ -131,6 +199,8 @@
 </template>
 
 <script>
+    import {put} from "../../utils/ali-oss";
+
     export default {
         name: "Goods",
         data() {
@@ -160,8 +230,8 @@
                     // 每个批发单位数量
                     numSpec: null,
                     // 规格
-                    specification: '',
-                    detail: '',
+                    specification: null,
+                    detail: null,
                     type: {},
                 },
                 // 表单数据验证规则
@@ -174,8 +244,10 @@
                 //图片相关变量
                 dialogImageUrl: '',
                 dialogVisible: false,
-                uploadForm: new FormData(),
                 fileList: [],
+                images: {},
+                goodsId: null,
+
             };
 
         },
@@ -186,19 +258,18 @@
             // 监听pagesize每页显示的条数改变事件
             handleSizeChange(newSize) {
                 this.queryInfo.size = newSize;
-                this.getTypeList();
+                this.getGoodsList();
             },
             // 监听页码值改变事件
             handleCurrentChange(newPage) {
                 this.queryInfo.page = newPage;
-                this.getTypeList();
+                this.getGoodsList();
 
             },
             async addDialogOpen() {
                 this.addDialogVisible = true;
                 const result = await this.$http.get("http://127.0.0.1:8084/type/allType");
                 console.log(result);
-                this.$refs.addFormRef.resetFields();
                 if (result.status !== 200) {
                     return this.$message.error("获取商品类型信息失败")
                 }
@@ -207,33 +278,34 @@
             //对话框点击取消
             addDialogClosed() {
                 // 重置内容
+                this.$refs.uploadRef.clearFiles();
                 this.$refs.addFormRef.resetFields();
                 this.addDialogVisible = false;
             },
             editDialogClosed() {
+                this.$refs.uploadRef.clearFiles();
                 this.$refs.addFormRef.resetFields();
                 this.editDialogVisible = false;
             },
             // 添加商品操作
-            async addGoods(param) {
-                const formData = new FormData();
-                formData.append("file", param.file);
-
-                const result = await this.$http.post("http://127.0.0.1:8084/goods/uploadImages", formData);
-                console.log(result);
-
+            addGoods() {
                 // 表单预校验
                 this.$refs.addFormRef.validate(async valid => {
                     if (!valid) return;
-
-                    // console.log("hhh" + this.imagesForm.get("images"));
+                    // 先存入商品文本信息
                     const result = await this.$http.post(
                         "http://127.0.0.1:8084/goods/addGoods",
                         this.goodsForm);
-                    console.log(result);
+
                     if (result.status !== 200)
                         return this.$message.error("添加商品失败");
+
+                    this.goodsId = result.data.id;
+                    // 触发上传图片
+                    this.$refs.uploadRef.submit();
+
                     this.$message.success("添加商品成功");
+                    this.$refs.uploadRef.clearFiles();
                     this.$refs.addFormRef.resetFields();
                     this.addDialogVisible = false;
                     this.getGoodsList();
@@ -249,17 +321,60 @@
                 this.goodsList = result.data.content;
                 this.total = result.data.totalElements;
             },
+            // 上传图片的方法
+            upLoadImages(params) {// params 是当前本地上传的这张图片
+                const fileName = params.file.name;
+                const file = params.file;
+                // 调oss api 上传图片
+                put(fileName, file).then(async result => {
+                    this.images.url = result.url;
+                    this.images.name = result.name;
+                    const goods = {};
+                    goods.id = this.goodsId;
+                    this.images.goods = goods;
+                    const res = await this.$http.post(
+                        "http://localhost:8084/images/addImages",
+                        this.images);
+                    console.log(res);
+                });
+            },
+            async goodsStateChanged(row) {
+                console.log(row.sell);
+                const result = await this.$http.get("http://127.0.0.1:8084/goods/updateIsSell",
+                    {params: {id: row.id, isSell: row.sell}});
+                console.log(result);
+
+            },
 
             getGoodsById(row) {
 
             },
             editGoods(row) {
+                this.editDialogVisible = true;
 
             },
-            deleteGoods(row) {
+            async deleteGoods(row) {
+                console.log(row);
+                // 弹框再次确认
+                const result = await this.$confirm('是否确认删除此商品？', '提示', {
+                        confirmButtonText: '确认',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }
+                ).catch(error => {
+                    return error;
+                });
 
+                if (result !== 'confirm')
+                    return this.$message.info("取消删除");
+                const {data} = await this.$http.get("http://127.0.0.1:8084/goods/deleteGoods", {params: {id: row.id}});
+                if (data === true) {
+                    this.getGoodsList();
+                    return this.$message.success("删除成功");
+                }
+                return this.$message.error("删除失败");
             },
-            // 删除文件图片 file为被删除的文件 fileList是剩下的文件列表
+            // 删除待上传文件图片 file为被删除的文件 fileList是剩下的文件列表
             handleRemove(file, fileList) {
                 console.log(file, fileList);
             },
@@ -267,10 +382,6 @@
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
-            beforeUpload(file) {
-                this.uploadForm.append('file', file);
-                return false;
-            }
 
         },
 

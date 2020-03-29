@@ -90,11 +90,11 @@
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="typeForm" :rules="typeFormRules" ref="addFormRef" label-width="90px">
-                <el-form-item label="类型名称" prop="name">
-                    <el-input v-model="typeForm.name"></el-input>
-                </el-form-item>
-            </el-form>
+            <el-table :data="goodsList">
+                <el-table-column property="id" label="商品编号" width="100"></el-table-column>
+                <el-table-column property="name" label="商品名称"></el-table-column>
+                <el-table-column property="stock" label="商品库存"></el-table-column>
+            </el-table>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
             </span>
@@ -132,6 +132,7 @@
                         {min: 2, max: 10, message: '商品类别长度在2-10个字符之间', trigger: 'blur'}
                     ],
                 },
+                goodsList: [],
 
             };
         },
@@ -157,6 +158,7 @@
                 this.addDialogVisible = false;
             },
             editDialogClosed() {
+                this.$refs.editFormRef.resetFields();
                 this.typeForm.name = "";
                 this.editDialogVisible = false;
             },
@@ -212,15 +214,17 @@
                 this.typeList = result.data.content;
                 this.total = result.data.totalElements;
             },
+
             async getTypeById(row) {
-                console.log(row);
                 this.viewDialogVisible = true;
+                const result = await this.$http.get("http://localhost:8084/goods/getGoodsByTypeId", {params: {id: row.id}});
+                console.log(result);
+                this.goodsList = result.data;
             },
 
             async deleteType(row) {
                 // 弹框再次确认
-                const result = await this.$confirm('是否确认删除此类型？', '提示',
-                    {
+                const result = await this.$confirm('是否确认删除此类型？', '提示', {
                         confirmButtonText: '确认',
                         cancelButtonText: '取消',
                         type: 'warning'

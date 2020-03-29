@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
     // next是一个函数，表示放行
     // 如果访问login页面，直接放行
     if (to.path === '/login') return next();
-    // 访问其他页面，严重session中token是否存在
+    // 访问其他页面，验证session中token是否存在
     const tokenStr = window.sessionStorage.getItem('token');
     if (!tokenStr) return next('/login');
     next()

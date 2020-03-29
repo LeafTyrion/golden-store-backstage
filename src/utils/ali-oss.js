@@ -6,6 +6,7 @@ export let client = new OSS({
     accessKeyId: 'LTAI4FeDxmH2c3hnbdwEb9QC',
     accessKeySecret: 'dCvVuIkbAlqaIUjOtnL6dPLrijQfUR',
     bucket: 'tachikoma',
+    secure: true
 });
 
 //上传

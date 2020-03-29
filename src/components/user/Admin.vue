@@ -28,7 +28,7 @@
                 <el-table-column label="昵称" prop="nickName"/>
                 <el-table-column label="地址" prop="address"/>
                 <el-table-column label="手机号" prop="telephone"/>
-                <el-table-column label="状态" width="90px">
+                <el-table-column label="状态" width="90px" prop="status">
                     <template slot-scope="scope">
                         <el-switch v-model="scope.row.status" @change="userStateChanged(scope.row)"/>
                     </template>
@@ -215,6 +215,10 @@
             // 监听状态开关的改变
             async userStateChanged(userinfo) {
                 console.log(userinfo);
+                const id = 1;
+                const result = await this.$http.get("http://127.0.0.1:8084/goods/updateIsSell",
+                    {params: {id: id, isSell: userinfo.status}});
+                console.log(result);
                 //todo 调用接口改变状态
                 // const result = await this.$http.put("url地址 userinfo.status")
                 // if (result.status !== 200) {
@@ -268,9 +272,9 @@
                 });
                 console.log(result)
 
-                if(result==='cancel'){
+                if (result === 'cancel') {
                     //取消删除
-                }else {
+                } else {
                     // 确认删除，调用删除接口
                 }
             }

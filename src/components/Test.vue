@@ -53,19 +53,21 @@
                 // var filePath = this.baseurl + new Date().getTime() + '-' + fileName
                 //
                 // var file = item.file // 当前本地上传的这张图片
-                // put(filePath, file).then(result => {  // 调oss api 上传图片
-                //     console.log(result)
-                //     // 文件上传成功后，获取返回值中的文件名name，并把其放入fileList数组中，表示当前已上传的文件
-                //     this.fileList.push(result.name)
-                // })
+                put(filePath, file).then(result => {  // 调oss api 上传图片
+                    console.log(result)
+                    // 文件上传成功后，获取返回值中的文件名name，并把其放入fileList数组中，表示当前已上传的文件
+                    this.fileList.push(result.name)
+                })
             },
             upLoadImage() {
                 this.$refs.fuck.submit();
             },
             // 删除合同图片
             handleRemove() {  // file 当前本地已上传的这张图片
-                const name = "tachikoma03.jpg";
-                remove(name).then()
+                this.dialogImageUrl = "https://tachikoma.oss-cn-chengdu.aliyuncs.com/tachikoma01.jpg";
+                this.dialogVisible = true;
+                // const name = "tachikoma03.jpg";
+                // remove(name).then()
                 // var fileName = file.name  // 当前本地已上传的这张图片的名称(带有时间日期)
                 // var removeName = ''
                 // this.fileList.forEach(function (name) { // forEach 在循环的数组中(fileList)找到oss和本地相同的文件名称

@@ -25,7 +25,7 @@
                 <el-table-column type="index" label="#"/>
                 <el-table-column label="商品编号" prop="id"/>
                 <el-table-column label="商品名称" prop="name"/>
-                <el-table-column label="状态" width="90px" prop="sell">
+                <el-table-column label="上架状态" width="90px" prop="sell">
                     <template slot-scope="scope">
                         <el-switch v-model="scope.row.sell" @change="goodsStateChanged(scope.row)"></el-switch>
                     </template>
@@ -132,15 +132,15 @@
                 :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="goodsForm" :rules="goodsFormRules" ref="addFormRef" label-width="150px">
+            <el-form :model="goods" :rules="goodsFormRules" ref="editFormRef" label-width="150px">
                 <el-form-item label="商品名称" prop="name">
-                    <el-input v-model="goodsForm.name"/>
+                    <el-input v-model="goods.name"/>
                 </el-form-item>
                 <el-form-item label="库存数量" prop="stock">
-                    <el-input v-model="goodsForm.stock"/>
+                    <el-input v-model="goods.stock"/>
                 </el-form-item>
                 <el-form-item label="商品类型" prop="type">
-                    <el-select v-model="goodsForm.type"
+                    <el-select v-model="goods.type"
                                value-key="id"
                                filterable
                                placeholder="请选择商品类型">
@@ -153,23 +153,23 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="成本价" prop="costPrice">
-                    <el-input v-model="goodsForm.costPrice"/>
+                    <el-input v-model="goods.costPrice"/>
                 </el-form-item>
                 <el-form-item label="批发价" prop="tradePrice">
-                    <el-input v-model="goodsForm.tradePrice"/>
+                    <el-input v-model="goods.tradePrice"/>
                 </el-form-item>
                 <el-form-item label="建议零售价" prop="price">
-                    <el-input v-model="goodsForm.price"/>
+                    <el-input v-model="goods.price"/>
                 </el-form-item>
                 <el-form-item label="每个批发单位数量" prop="numSpec">
-                    <el-input v-model="goodsForm.numSpec"/>
+                    <el-input v-model="goods.numSpec"/>
                 </el-form-item>
                 <el-form-item label="商品规格" prop="specification">
-                    <el-input v-model="goodsForm.specification"/>
+                    <el-input v-model="goods.specification"/>
                 </el-form-item>
                 <el-form-item label="商品详细信息" prop="detail">
                     <el-input type="textarea" :autosize="{minRows:2,maxRows:5}"
-                              v-model="goodsForm.detail"/>
+                              v-model="goods.detail"/>
                 </el-form-item>
                 <el-form-item label="商品图片">
                     <el-upload action="#"
@@ -191,8 +191,8 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="addDialogClosed">取 消</el-button>
-                <el-button type="primary" @click="addGoods">确 定</el-button>
+                <el-button @click="editDialogClosed">取 消</el-button>
+                <el-button type="primary" @click="updateGoods">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -234,6 +234,8 @@
                     detail: null,
                     type: {},
                 },
+                goods: {},
+                goodsId: null,
                 // 表单数据验证规则
                 goodsFormRules: {
                     name: [
@@ -246,8 +248,6 @@
                 dialogVisible: false,
                 fileList: [],
                 images: {},
-                goodsId: null,
-
             };
 
         },
@@ -255,7 +255,7 @@
             this.getGoodsList();
         },
         methods: {
-            // 监听pagesize每页显示的条数改变事件
+            // 监听pageSize每页显示的条数改变事件
             handleSizeChange(newSize) {
                 this.queryInfo.size = newSize;
                 this.getGoodsList();
@@ -266,6 +266,7 @@
                 this.getGoodsList();
 
             },
+
             async addDialogOpen() {
                 this.addDialogVisible = true;
                 const result = await this.$http.get("http://127.0.0.1:8084/type/allType");
@@ -274,18 +275,6 @@
                     return this.$message.error("获取商品类型信息失败")
                 }
                 this.typeList = result.data;
-            },
-            //对话框点击取消
-            addDialogClosed() {
-                // 重置内容
-                this.$refs.uploadRef.clearFiles();
-                this.$refs.addFormRef.resetFields();
-                this.addDialogVisible = false;
-            },
-            editDialogClosed() {
-                this.$refs.uploadRef.clearFiles();
-                this.$refs.addFormRef.resetFields();
-                this.editDialogVisible = false;
             },
             // 添加商品操作
             addGoods() {
@@ -311,6 +300,15 @@
                     this.getGoodsList();
                 });
             },
+            //对话框点击取消
+            addDialogClosed() {
+                // 重置内容
+                this.$refs.uploadRef.clearFiles();
+                this.$refs.addFormRef.resetFields();
+                this.addDialogVisible = false;
+            },
+
+
             async getGoodsList() {
                 const result = await this.$http.get("http://127.0.0.1:8084/goods/allGoods",
                     {params: this.queryInfo});
@@ -338,6 +336,7 @@
                     console.log(res);
                 });
             },
+
             async goodsStateChanged(row) {
                 console.log(row.sell);
                 const result = await this.$http.get("http://127.0.0.1:8084/goods/updateIsSell",
@@ -349,12 +348,38 @@
             getGoodsById(row) {
 
             },
-            editGoods(row) {
+
+            async editGoods(row) {
                 this.editDialogVisible = true;
+                const goodsRes = await this.$http.get("http://127.0.0.1:8084/goods/queryGoods",
+                    {params: {id: row.id}});
+                this.goods = goodsRes.data;
+
+                const typeRes = await this.$http.get("http://127.0.0.1:8084/type/allType");
+                console.log(typeRes);
+                if (typeRes.status !== 200) {
+                    return this.$message.error("获取商品类型信息失败")
+                }
+                this.typeList = typeRes.data;
+
+                const imagesRes = await this.$http.get("http://127.0.0.1:8084/images/getImagesByGoodsId",
+                    {params: {id: row.id}});
+                console.log(imagesRes);
+                this.fileList = imagesRes.data;
 
             },
+            async updateGoods() {
+
+            },
+            editDialogClosed() {
+                this.$refs.uploadRef.clearFiles();
+                this.$refs.editFormRef.resetFields();
+                this.fileList = [];
+                this.editDialogVisible = false;
+            },
+
+            // 删除商品操作
             async deleteGoods(row) {
-                console.log(row);
                 // 弹框再次确认
                 const result = await this.$confirm('是否确认删除此商品？', '提示', {
                         confirmButtonText: '确认',
@@ -374,6 +399,7 @@
                 }
                 return this.$message.error("删除失败");
             },
+
             // 删除待上传文件图片 file为被删除的文件 fileList是剩下的文件列表
             handleRemove(file, fileList) {
                 console.log(file, fileList);

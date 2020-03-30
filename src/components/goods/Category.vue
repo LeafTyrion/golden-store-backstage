@@ -70,13 +70,13 @@
         </el-dialog>
         <!--编辑商品类型对话框-->
         <el-dialog
-                title="编辑商品类型"
+                title="修改商品类型"
                 :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="typeForm" :rules="typeFormRules" ref="editFormRef" label-width="90px">
+            <el-form :model="type" :rules="typeFormRules" ref="editFormRef" label-width="90px">
                 <el-form-item label="类型名称" prop="name">
-                    <el-input v-model="typeForm.name"/>
+                    <el-input v-model="type.name"/>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -125,6 +125,7 @@
                     id: null,
                     name: '',
                 },
+                type: {},
                 // 表单数据验证规则
                 typeFormRules: {
                     name: [
@@ -159,15 +160,15 @@
             },
             editDialogClosed() {
                 this.$refs.editFormRef.resetFields();
-                this.typeForm.name = "";
                 this.editDialogVisible = false;
             },
             // 编辑对话框
-            editType(row) {
+            async editType(row) {
                 console.log(row);
                 this.editDialogVisible = true;
-                this.typeForm.name = row.name;
-                this.typeForm.id = row.id;
+                const result = await this.$http.get("http://127.0.0.1:8084/type/queryType", {params: {id: row.id}});
+                console.log(result);
+                this.type = result.data;
             },
             //对话框点击确定添加
             addCategory() {
@@ -191,14 +192,14 @@
                 this.$refs.editFormRef.validate(async valid => {
                     if (!valid) return;
 
-                    const result = await this.$http.post("http://127.0.0.1:8084/type/updateType", this.typeForm);
+                    console.log(this.type);
+
+                    const result = await this.$http.post("http://127.0.0.1:8084/type/updateType", this.type);
                     console.log(result);
                     if (result.status !== 200)
                         return this.$message.error("修改类型失败");
                     this.$message.success("修改类型成功");
                     this.$refs.editFormRef.resetFields();
-                    this.typeForm.id = null;
-                    this.typeForm.name = null;
                     this.editDialogVisible = false;
                     this.getTypeList();
                 });

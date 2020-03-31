@@ -34,7 +34,7 @@
                 <el-table-column label="操作" width="200px">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" content="查看详情" placement="top" :enterable="false">
-                            <el-button @click="getGoodsById(scope.row)" type="warning" icon="el-icon-notebook-2"
+                            <el-button @click="viewGoods(scope.row)" type="warning" icon="el-icon-notebook-2"
                                        size="mini"/>
                         </el-tooltip>
                         <el-tooltip effect="dark" content="编辑" placement="top" :enterable="false">
@@ -195,6 +195,30 @@
                 <el-button type="primary" @click="updateGoods">确 定</el-button>
             </span>
         </el-dialog>
+        <!--查看商品信息对话框-->
+        <el-dialog
+                title="修改商品"
+                :visible.sync="viewDialogVisible"
+                width="50%">
+            <!--主体内容区域-->
+            <el-form :model="goods" :rules="goodsFormRules" ref="editFormRef" label-width="150px">
+                <el-form-item label="商品名称" prop="name">{{goods.name}}</el-form-item>
+                <el-form-item label="库存数量" prop="stock">{{goods.stock}}</el-form-item>
+                <el-form-item label="商品类型" prop="type">{{goods.type.name}}</el-form-item>
+                <el-form-item label="成本价" prop="costPrice">{{goods.costPrice}}</el-form-item>
+                <el-form-item label="批发价" prop="tradePrice">{{goods.tradePrice}}</el-form-item>
+                <el-form-item label="建议零售价" prop="price">{{goods.price}}</el-form-item>
+                <el-form-item label="每个批发单位数量" prop="numSpec">{{goods.numSpec}}</el-form-item>
+                <el-form-item label="商品规格" prop="specification">{{goods.specification}}</el-form-item>
+                <el-form-item label="商品详细信息" prop="detail">{{goods.detail}}</el-form-item>
+                <el-form-item label="商品图片">
+                    <el-image v-for="imageUrls in fileList" :key="imageUrls.id" :src="imageUrls.url"/>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -234,7 +258,11 @@
                     detail: null,
                     type: {},
                 },
-                goods: {},
+                goods: {
+                    type: {
+                        name: null
+                    }
+                },
                 goodsId: null,
                 // 表单数据验证规则
                 goodsFormRules: {
@@ -345,8 +373,17 @@
 
             },
 
-            getGoodsById(row) {
+            async viewGoods(row) {
+                this.viewDialogVisible = true;
+                const goodsRes = await this.$http.get("http://127.0.0.1:8084/goods/queryGoods",
+                    {params: {id: row.id}});
+                this.goods = goodsRes.data;
 
+                const imagesRes = await this.$http.get("http://127.0.0.1:8084/images/getImagesByGoodsId",
+                    {params: {id: row.id}});
+                console.log(imagesRes);
+                this.fileList = imagesRes.data;
+                console.log(this.fileList);
             },
 
             async editGoods(row) {
@@ -368,8 +405,32 @@
                 this.fileList = imagesRes.data;
 
             },
-            async updateGoods() {
+            updateGoods() {
+                // 表单预校验
+                this.$refs.editFormRef.validate(async valid => {
+                    if (!valid) return;
+                    // 先存入商品文本信息
+                    const result = await this.$http.post(
+                        "http://127.0.0.1:8084/goods/updateGoods",
+                        this.goods);
 
+                    if (result.status !== 200)
+                        return this.$message.error("修改商品失败");
+
+                    this.goodsId = result.data.id;
+                    const delRes = await this.$http.get("http://127.0.0.1:8084/images/deleteImagesByGoodsId",
+                        {params: {id: this.goodsId}});
+                    console.log(delRes);
+                    // 触发上传图片
+                    this.$refs.uploadRef.submit();
+
+                    this.$message.success("修改商品成功");
+                    this.$refs.uploadRef.clearFiles();
+                    this.$refs.editFormRef.resetFields();
+                    this.fileList = [];
+                    this.editDialogVisible = false;
+                    this.getGoodsList();
+                });
             },
             editDialogClosed() {
                 this.$refs.uploadRef.clearFiles();
@@ -415,6 +476,9 @@
 </script>
 
 <style lang="less" scoped>
-
+    .el-image {
+        width: 150px;
+        height: 150px;
+    }
 
 </style>

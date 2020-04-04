@@ -4,11 +4,12 @@ import Login from "../components/Login";
 import Home from "../components/Home";
 import Index from "../components/index/Index";
 import Goods from "../components/goods/Goods";
-import Category from "../components/goods/Category";
+import Category from "../components/category/Category";
 import Admin from "../components/user/Admin";
 import Orders from "../components/orders/Orders";
 import Test from "../components/Test";
 import Users from "../components/user/Users";
+import SubCategory from "../components/category/SubCategory";
 
 Vue.use(VueRouter);
 
@@ -33,8 +34,9 @@ const routes = [
             {path: '/admins', component: Admin},
             {path: '/users', component: Users},
             {path: '/goods', component: Goods},
-            {path: '/categories', component: Category},
+            {path: '/category', component: Category},
             {path: '/orders', component: Orders},
+            {path:'/subCategory', component: SubCategory},
         ]
     },
 

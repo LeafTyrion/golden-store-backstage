@@ -201,7 +201,7 @@
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="goods" :rules="goodsFormRules" ref="editFormRef" label-width="150px">
+            <el-form :model="goods" label-width="150px">
                 <el-form-item label="商品名称" prop="name">{{goods.name}}</el-form-item>
                 <el-form-item label="库存数量" prop="stock">{{goods.stock}}</el-form-item>
                 <el-form-item label="商品类型" prop="type">{{goods.type.name}}</el-form-item>

@@ -3,8 +3,8 @@
         <!--面包屑导航-->
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item :to="{ path: '/index' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>商品管理</el-breadcrumb-item>
             <el-breadcrumb-item>分类管理</el-breadcrumb-item>
+            <el-breadcrumb-item>子类型管理</el-breadcrumb-item>
         </el-breadcrumb>
         <!--卡片视图区域-->
         <el-card class="box-card">
@@ -17,14 +17,14 @@
                 </el-col>
                 <!--按钮区域-->
                 <el-col :span="4">
-                    <el-button type="primary" @click="addDialogVisible=true">添加商品类型</el-button>
+                    <el-button type="primary" @click="addDialogVisible=true">添加商品子类型</el-button>
                 </el-col>
             </el-row>
             <!--列表区域-->
             <el-table :data="typeList" border stripe>
                 <el-table-column type="index" label="#"/>
-                <el-table-column label="类型编号" prop="id"/>
-                <el-table-column label="类型名称" prop="name"/>
+                <el-table-column label="子类型编号" prop="id"/>
+                <el-table-column label="子类型名称" prop="name"/>
                 <!--操作区域-->
                 <el-table-column label="操作" width="200px">
                     <template slot-scope="scope">
@@ -54,13 +54,34 @@
         </el-card>
         <!--添加商品类型对话框-->
         <el-dialog
-                title="添加商品类型"
+                title="添加商品子类型"
                 :visible.sync="addDialogVisible"
                 width="50%">
             <!--主体内容区域-->
             <el-form :model="typeForm" :rules="typeFormRules" ref="addFormRef" label-width="90px">
-                <el-form-item label="类型名称" prop="name">
+                <el-form-item label="父类型名称" prop="typeName">
                     <el-input v-model="typeForm.name"/>
+                </el-form-item>
+                <el-form-item label="子类型名称" prop="typeName">
+                    <el-input v-model="typeForm.name"/>
+                </el-form-item>
+                <el-form-item label="子类型图片">
+                    <el-upload action="#"
+                               list-type="picture-card"
+                               ref="uploadRef"
+                               :on-remove="handleRemove"
+                               :on-preview="handlePictureCardPreview"
+                               :http-request="upLoadImages"
+                               :multiple="true"
+                               :auto-upload="false"
+                               :limit=1
+                               :file-list="fileList">
+                        <i class="el-icon-plus"/>
+                        <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
+                    </el-dialog>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -70,31 +91,55 @@
         </el-dialog>
         <!--编辑商品类型对话框-->
         <el-dialog
-                title="修改商品类型"
+                title="修改商品子类型"
                 :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
             <el-form :model="type" :rules="typeFormRules" ref="editFormRef" label-width="90px">
-                <el-form-item label="类型名称" prop="name">
+                <el-form-item label="父类型名称" prop="typeName">
+                    <el-input v-model="typeForm.name"/>
+                </el-form-item>
+                <el-form-item label="子类型名称" prop="name">
                     <el-input v-model="type.name"/>
+                </el-form-item>
+                <el-form-item label="子类型图片">
+                    <el-upload action="#"
+                               list-type="picture-card"
+                               ref="uploadRef"
+                               :on-remove="handleRemove"
+                               :on-preview="handlePictureCardPreview"
+                               :http-request="upLoadImages"
+                               :multiple="true"
+                               :auto-upload="false"
+                               :limit=1
+                               :file-list="fileList">
+                        <i class="el-icon-plus"/>
+                        <div slot="tip">只能上传1张格式为jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
+                    </el-dialog>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="editDialogClosed">取 消</el-button>
-                <el-button type="primary" @click="updateCategory">确 定</el-button>
-            </span>
+                        <el-button @click="editDialogClosed">取 消</el-button>
+                        <el-button type="primary" @click="updateCategory">确 定</el-button>
+                    </span>
         </el-dialog>
         <!--查看商品详细信息对话框-->
         <el-dialog
-                title="查看商品类型"
+                title="查看商品子类型"
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-table :data="goodsList">
-                <el-table-column property="id" label="商品编号" width="100"></el-table-column>
-                <el-table-column property="name" label="商品名称"></el-table-column>
-                <el-table-column property="stock" label="商品库存"></el-table-column>
-            </el-table>
+            <el-form :model="type" label-width="150px">
+                <el-form-item label="子类型编号" prop="id">{{type.id}}</el-form-item>
+                <el-form-item label="子类型名称" prop="name">{{type.name}}</el-form-item>
+                <el-form-item label="父类型名称" prop="type.name">{{type.type.name}}</el-form-item>
+                <el-form-item label="子类型编号">
+                    <el-image :src="type.imageUrl"/>
+                </el-form-item>
+            </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
             </span>
@@ -103,8 +148,10 @@
 </template>
 
 <script>
+    import {put} from "../../utils/ali-oss";
+
     export default {
-        name: "Category",
+        name: "SubCategory",
         data() {
             return {
                 // 分页查询参数
@@ -125,7 +172,11 @@
                     id: null,
                     name: '',
                 },
-                type: {},
+                type: {
+                    type: {
+                        name: '',
+                    }
+                },
                 // 表单数据验证规则
                 typeFormRules: {
                     name: [
@@ -133,7 +184,11 @@
                         {min: 2, max: 10, message: '商品类别长度在2-10个字符之间', trigger: 'blur'}
                     ],
                 },
-                goodsList: [],
+                //图片相关变量
+                dialogImageUrl: '',
+                dialogVisible: false,
+                fileList: [],
+                images: {},
 
             };
         },
@@ -207,7 +262,7 @@
 
 
             async getTypeList() {
-                const result = await this.$http.get("http://127.0.0.1:8084/type/allType", {params: this.queryInfo});
+                const result = await this.$http.get("http://127.0.0.1:8084/subType/allSubType", {params: this.queryInfo});
                 console.log(result);
                 if (result.status !== 200) {
                     return this.$message.error("获取商品类型信息失败")
@@ -218,9 +273,9 @@
 
             async getTypeById(row) {
                 this.viewDialogVisible = true;
-                const result = await this.$http.get("http://localhost:8084/goods/getGoodsByTypeId", {params: {id: row.id}});
+                const result = await this.$http.get("http://localhost:8084/subType/querySubType", {params: {id: row.id}});
                 console.log(result);
-                this.goodsList = result.data;
+                this.type = result.data;
             },
 
             async deleteType(row) {
@@ -243,7 +298,34 @@
                 }
                 return this.$message.error("删除失败");
 
-            }
+            },
+
+            // 上传图片的方法
+            upLoadImages(params) {// params 是当前本地上传的这张图片
+                const fileName = params.file.name;
+                const file = params.file;
+                // 调oss api 上传图片
+                put(fileName, file).then(async result => {
+                    this.images.url = result.url;
+                    this.images.name = result.name;
+                    const goods = {};
+                    goods.id = this.goodsId;
+                    this.images.goods = goods;
+                    const res = await this.$http.post(
+                        "http://localhost:8084/images/addImages",
+                        this.images);
+                    console.log(res);
+                });
+            },
+            // 删除待上传文件图片 file为被删除的文件 fileList是剩下的文件列表
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+
         }
     }
 </script>

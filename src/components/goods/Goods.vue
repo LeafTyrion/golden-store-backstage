@@ -60,6 +60,7 @@
         <!--添加商品信息对话框-->
         <el-dialog
                 title="添加商品"
+                :before-close="addDialogClosed"
                 :visible.sync="addDialogVisible"
                 width="50%">
             <!--主体内容区域-->
@@ -71,16 +72,14 @@
                     <el-input v-model="goodsForm.stock"/>
                 </el-form-item>
                 <el-form-item label="商品类型" prop="type">
-                    <el-select v-model="goodsForm.type"
-                               value-key="id"
-                               filterable
-                               placeholder="请选择商品类型">
-                        <el-option
-                                v-for="item in typeList"
-                                :value="item"
-                                :key="item.id"
-                                :label="item.name"/>
-                    </el-select>
+                    <el-cascader
+                            v-model="cascaderValue"
+                            ref="cascaderRef"
+                            :filterable="true"
+                            :props="optionProps"
+                            :options="typeList"
+                            @change="handleChange"
+                            placeholder="请选择商品类型"/>
                 </el-form-item>
                 <el-form-item label="成本价" prop="costPrice">
                     <el-input v-model="goodsForm.costPrice"/>
@@ -129,6 +128,7 @@
         <!--编辑修改商品信息对话框-->
         <el-dialog
                 title="修改商品"
+                :before-close="editDialogClosed"
                 :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
@@ -140,17 +140,14 @@
                     <el-input v-model="goods.stock"/>
                 </el-form-item>
                 <el-form-item label="商品类型" prop="type">
-                    <el-select v-model="goods.type"
-                               value-key="id"
-                               filterable
-                               placeholder="请选择商品类型">
-                        <el-option
-                                v-for="item in typeList"
-                                :value="item"
-                                :key="item.id"
-                                :label="item.name">
-                        </el-option>
-                    </el-select>
+                    <el-cascader
+                            v-model="cascaderValue"
+                            ref="cascaderRef"
+                            :filterable="true"
+                            :props="optionProps"
+                            :options="typeList"
+                            @change="handleChange"
+                            placeholder="请选择商品类型"/>
                 </el-form-item>
                 <el-form-item label="成本价" prop="costPrice">
                     <el-input v-model="goods.costPrice"/>
@@ -173,6 +170,7 @@
                 </el-form-item>
                 <el-form-item label="商品图片">
                     <el-upload action="#"
+                               :before-remove="imagesRemove"
                                list-type="picture-card"
                                ref="uploadRef"
                                :on-remove="handleRemove"
@@ -197,14 +195,17 @@
         </el-dialog>
         <!--查看商品信息对话框-->
         <el-dialog
-                title="修改商品"
+                title="查看商品详细信息"
+                :before-close="viewDialogClosed"
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
             <el-form :model="goods" label-width="150px">
                 <el-form-item label="商品名称" prop="name">{{goods.name}}</el-form-item>
                 <el-form-item label="库存数量" prop="stock">{{goods.stock}}</el-form-item>
-                <el-form-item label="商品类型" prop="type">{{goods.type.name}}</el-form-item>
+                <el-form-item label="商品类型" prop="type">
+                    {{goods.subType.type.name}}/{{goods.subType.name}}
+                </el-form-item>
                 <el-form-item label="成本价" prop="costPrice">{{goods.costPrice}}</el-form-item>
                 <el-form-item label="批发价" prop="tradePrice">{{goods.tradePrice}}</el-form-item>
                 <el-form-item label="建议零售价" prop="price">{{goods.price}}</el-form-item>
@@ -216,7 +217,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
+                <el-button type="primary" @click="viewDialogClosed">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -229,6 +230,15 @@
         name: "Goods",
         data() {
             return {
+                // 级联选择器相关变量
+                subType: {},
+                optionProps: {
+                    value: 'id',
+                    label: 'name',
+                    children: 'subType'
+                },
+                cascaderValue: [],
+                // 分页查询相关变量
                 queryInfo: {
                     page: 1,
                     size: 10,
@@ -256,11 +266,17 @@
                     // 规格
                     specification: null,
                     detail: null,
-                    type: {},
+                    subType: {
+                        id: null,
+                    },
                 },
                 goods: {
-                    type: {
-                        name: null
+                    subType: {
+                        id: null,
+                        name: null,
+                        type: {
+                            id: null,
+                        }
                     }
                 },
                 goodsId: null,
@@ -283,6 +299,11 @@
             this.getGoodsList();
         },
         methods: {
+            handleChange(value) {
+                console.log(value);
+                this.goodsForm.subType.id = value[1];
+                this.goods.subType.id = value[1];
+            },
             // 监听pageSize每页显示的条数改变事件
             handleSizeChange(newSize) {
                 this.queryInfo.size = newSize;
@@ -322,6 +343,8 @@
                     this.$refs.uploadRef.submit();
 
                     this.$message.success("添加商品成功");
+
+                    this.cascaderValue = [];
                     this.$refs.uploadRef.clearFiles();
                     this.$refs.addFormRef.resetFields();
                     this.addDialogVisible = false;
@@ -331,6 +354,7 @@
             //对话框点击取消
             addDialogClosed() {
                 // 重置内容
+                this.cascaderValue = [];
                 this.$refs.uploadRef.clearFiles();
                 this.$refs.addFormRef.resetFields();
                 this.addDialogVisible = false;
@@ -349,10 +373,14 @@
             },
             // 上传图片的方法
             upLoadImages(params) {// params 是当前本地上传的这张图片
+                console.log("开始修改图片");
                 const fileName = params.file.name;
                 const file = params.file;
+                console.log(this.fileList);
                 // 调oss api 上传图片
                 put(fileName, file).then(async result => {
+                    console.log(fileName);
+                    console.log("修改图片成功");
                     this.images.url = result.url;
                     this.images.name = result.name;
                     const goods = {};
@@ -378,6 +406,7 @@
                 const goodsRes = await this.$http.get("http://127.0.0.1:8084/goods/queryGoods",
                     {params: {id: row.id}});
                 this.goods = goodsRes.data;
+                console.log(goodsRes);
 
                 const imagesRes = await this.$http.get("http://127.0.0.1:8084/images/getImagesByGoodsId",
                     {params: {id: row.id}});
@@ -385,12 +414,21 @@
                 this.fileList = imagesRes.data;
                 console.log(this.fileList);
             },
+            // 关闭查看商品信息对话框
+            viewDialogClosed() {
+                this.cascaderValue = [];
+                this.fileList = [];
+                this.viewDialogVisible = false;
+            },
 
             async editGoods(row) {
                 this.editDialogVisible = true;
                 const goodsRes = await this.$http.get("http://127.0.0.1:8084/goods/queryGoods",
                     {params: {id: row.id}});
+                console.log(goodsRes);
                 this.goods = goodsRes.data;
+
+                this.cascaderValue = [this.goods.subType.type.id, this.goods.subType.id];
 
                 const typeRes = await this.$http.get("http://127.0.0.1:8084/type/allType");
                 console.log(typeRes);
@@ -403,6 +441,7 @@
                     {params: {id: row.id}});
                 console.log(imagesRes);
                 this.fileList = imagesRes.data;
+                console.log(this.fileList)
 
             },
             updateGoods() {
@@ -413,17 +452,11 @@
                     const result = await this.$http.post(
                         "http://127.0.0.1:8084/goods/updateGoods",
                         this.goods);
-
                     if (result.status !== 200)
                         return this.$message.error("修改商品失败");
 
                     this.goodsId = result.data.id;
-                    const delRes = await this.$http.get("http://127.0.0.1:8084/images/deleteImagesByGoodsId",
-                        {params: {id: this.goodsId}});
-                    console.log(delRes);
-                    // 触发上传图片
                     this.$refs.uploadRef.submit();
-
                     this.$message.success("修改商品成功");
                     this.$refs.uploadRef.clearFiles();
                     this.$refs.editFormRef.resetFields();
@@ -433,6 +466,7 @@
                 });
             },
             editDialogClosed() {
+                this.cascaderValue = [];
                 this.$refs.uploadRef.clearFiles();
                 this.$refs.editFormRef.resetFields();
                 this.fileList = [];
@@ -460,10 +494,26 @@
                 }
                 return this.$message.error("删除失败");
             },
+            async imagesRemove() {
+                // 弹框再次确认
+                await this.$confirm('是否确认删除此图片？', '提示', {
+                    confirmButtonText: '确认',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                });
+            },
 
             // 删除待上传文件图片 file为被删除的文件 fileList是剩下的文件列表
-            handleRemove(file, fileList) {
+            async handleRemove(file, fileList) {
                 console.log(file, fileList);
+                const {data} = await this.$http.get("http://127.0.0.1:8084/images/deleteImageById",
+                    {params: {id: file.id}});
+                console.log(data);
+                if (data === true) {
+                    this.$message.success("删除成功");
+                    return true;
+                }
+                this.$message.error("删除失败");
             },
             handlePictureCardPreview(file) {
                 this.dialogImageUrl = file.url;

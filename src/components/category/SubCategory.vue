@@ -12,16 +12,16 @@
                 <!--搜索区域-->
                 <el-col :span="7">
                     <el-input placeholder="请输入内容" v-model="queryInfo.query">
-                        <el-button slot="append" icon="el-icon-search" @click="getTypeList"></el-button>
+                        <el-button slot="append" icon="el-icon-search" @click="getSubTypeList"></el-button>
                     </el-input>
                 </el-col>
                 <!--按钮区域-->
                 <el-col :span="4">
-                    <el-button type="primary" @click="addDialogVisible=true">添加商品子类型</el-button>
+                    <el-button type="primary" @click="addDialogOpen">添加商品子类型</el-button>
                 </el-col>
             </el-row>
             <!--列表区域-->
-            <el-table :data="typeList" border stripe>
+            <el-table :data="subTypeList" border stripe>
                 <el-table-column type="index" label="#"/>
                 <el-table-column label="子类型编号" prop="id"/>
                 <el-table-column label="子类型名称" prop="name"/>
@@ -58,49 +58,22 @@
                 :visible.sync="addDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="typeForm" :rules="typeFormRules" ref="addFormRef" label-width="90px">
-                <el-form-item label="父类型名称" prop="typeName">
-                    <el-input v-model="typeForm.name"/>
-                </el-form-item>
-                <el-form-item label="子类型名称" prop="typeName">
-                    <el-input v-model="typeForm.name"/>
-                </el-form-item>
-                <el-form-item label="子类型图片">
-                    <el-upload action="#"
-                               list-type="picture-card"
-                               ref="uploadRef"
-                               :on-remove="handleRemove"
-                               :on-preview="handlePictureCardPreview"
-                               :http-request="upLoadImages"
-                               :multiple="true"
-                               :auto-upload="false"
-                               :limit=1
-                               :file-list="fileList">
-                        <i class="el-icon-plus"/>
-                        <div slot="tip">只能上传4张格式为jpg/png文件，且不超过500kb</div>
-                    </el-upload>
-                    <el-dialog :visible.sync="dialogVisible">
-                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
-                    </el-dialog>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="addDialogClosed">取 消</el-button>
-                <el-button type="primary" @click="addCategory">确 定</el-button>
-            </span>
-        </el-dialog>
-        <!--编辑商品类型对话框-->
-        <el-dialog
-                title="修改商品子类型"
-                :visible.sync="editDialogVisible"
-                width="50%">
-            <!--主体内容区域-->
-            <el-form :model="type" :rules="typeFormRules" ref="editFormRef" label-width="90px">
-                <el-form-item label="父类型名称" prop="typeName">
-                    <el-input v-model="typeForm.name"/>
+            <el-form :model="subTypeForm" :rules="subTypeFormRules" ref="addFormRef" label-width="100px">
+                <el-form-item label="父类型名称" prop="type">
+                    <el-select v-model="subTypeForm.type"
+                               value-key="id"
+                               filterable
+                               placeholder="请选择商品父类型">
+                        <el-option
+                                v-for="item in typeList"
+                                :value="item"
+                                :key="item.id"
+                                :label="item.name">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="子类型名称" prop="name">
-                    <el-input v-model="type.name"/>
+                    <el-input v-model="subTypeForm.name"/>
                 </el-form-item>
                 <el-form-item label="子类型图片">
                     <el-upload action="#"
@@ -122,9 +95,56 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                        <el-button @click="editDialogClosed">取 消</el-button>
-                        <el-button type="primary" @click="updateCategory">确 定</el-button>
-                    </span>
+                <el-button @click="addDialogClosed">取 消</el-button>
+                <el-button type="primary" @click="addCategory">确 定</el-button>
+            </span>
+        </el-dialog>
+        <!--编辑商品类型对话框-->
+        <el-dialog
+                title="添加商品子类型"
+                :visible.sync="editDialogVisible"
+                width="50%">
+            <!--主体内容区域-->
+            <el-form :model="subTypeForm" :rules="subTypeFormRules" ref="editFormRef" label-width="100px">
+                <el-form-item label="父类型名称" prop="type">
+                    <el-select v-model="subTypeForm.type.name"
+                               value-key="id"
+                               filterable
+                               placeholder="请选择商品父类型">
+                        <el-option
+                                v-for="item in typeList"
+                                :value="item"
+                                :key="item.id"
+                                :label="item.name">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="子类型名称" prop="name">
+                    <el-input v-model="subTypeForm.name"/>
+                </el-form-item>
+                <el-form-item label="子类型图片">
+                    <el-upload action="#"
+                               list-type="picture-card"
+                               ref="uploadRef"
+                               :on-remove="handleRemove"
+                               :on-preview="handlePictureCardPreview"
+                               :http-request="upLoadImages"
+                               :multiple="true"
+                               :auto-upload="false"
+                               :limit=1
+                               :file-list="fileList">
+                        <i class="el-icon-plus"/>
+                        <div slot="tip">只能上传1张格式为jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="../../logo.png">
+                    </el-dialog>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editDialogClosed">取 消</el-button>
+                <el-button type="primary" @click="updateSubCategory">确 定</el-button>
+            </span>
         </el-dialog>
         <!--查看商品详细信息对话框-->
         <el-dialog
@@ -132,12 +152,12 @@
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
-            <el-form :model="type" label-width="150px">
-                <el-form-item label="子类型编号" prop="id">{{type.id}}</el-form-item>
-                <el-form-item label="子类型名称" prop="name">{{type.name}}</el-form-item>
-                <el-form-item label="父类型名称" prop="type.name">{{type.type.name}}</el-form-item>
-                <el-form-item label="子类型编号">
-                    <el-image :src="type.imageUrl"/>
+            <el-form :model="subType" label-width="150px">
+                <el-form-item label="子类型编号：" prop="id">{{subType.id}}</el-form-item>
+                <el-form-item label="子类型名称：" prop="name">{{subType.name}}</el-form-item>
+                <el-form-item label="父类型名称：" prop="type.name">{{subType.type.name}}</el-form-item>
+                <el-form-item label="子类型图片：">
+                    <el-image :src="subType.imageUrl"/>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -161,29 +181,37 @@
                     query: null,
                 },
                 total: 0,
+
                 typeList: [],
+                subTypeList: [],
 
                 // 控制对话框打开关闭
                 addDialogVisible: false,
                 editDialogVisible: false,
                 viewDialogVisible: false,
                 // 表单数据
-                typeForm: {
+                subTypeForm: {
                     id: null,
                     name: '',
+                    imageUrl: '',
+                    type: {
+                        id: null
+                    }
                 },
-                type: {
+                subType: {
                     type: {
                         name: '',
                     }
                 },
                 // 表单数据验证规则
-                typeFormRules: {
+                subTypeFormRules: {
                     name: [
-                        {required: true, message: '请输入商品类别', trigger: 'blur'},
+                        {required: true, message: '请输入商品子类别名称', trigger: 'blur'},
                         {min: 2, max: 10, message: '商品类别长度在2-10个字符之间', trigger: 'blur'}
                     ],
                 },
+                subTypeId: null,
+
                 //图片相关变量
                 dialogImageUrl: '',
                 dialogVisible: false,
@@ -193,27 +221,38 @@
             };
         },
         created() {
-            this.getTypeList();
+            this.getSubTypeList();
         },
         methods: {
             // 监听pagesize每页显示的条数改变事件
             handleSizeChange(newSize) {
                 this.queryInfo.size = newSize;
-                this.getTypeList();
+                this.getSubTypeList();
             },
             // 监听页码值改变事件
             handleCurrentChange(newPage) {
                 this.queryInfo.page = newPage;
-                this.getTypeList();
+                this.getSubTypeList();
 
             },
-            //对话框点击取消
+            // 添加对话框点击打开
+            async addDialogOpen() {
+                this.addDialogVisible = true;
+                const result = await this.$http.get("http://127.0.0.1:8084/type/allType");
+                console.log(result);
+                this.typeList = result.data;
+                console.log(this.typeList)
+
+            },
+            //添加对话框点击取消
             addDialogClosed() {
                 // 重置内容
+                this.$refs.uploadRef.clearFiles();
                 this.$refs.addFormRef.resetFields();
                 this.addDialogVisible = false;
             },
             editDialogClosed() {
+                this.$refs.uploadRef.clearFiles();
                 this.$refs.editFormRef.resetFields();
                 this.editDialogVisible = false;
             },
@@ -221,53 +260,60 @@
             async editType(row) {
                 console.log(row);
                 this.editDialogVisible = true;
-                const result = await this.$http.get("http://127.0.0.1:8084/type/queryType", {params: {id: row.id}});
+                const result = await this.$http.get("http://localhost:8084/subType/querySubType", {params: {id: row.id}});
                 console.log(result);
-                this.type = result.data;
+                this.subTypeForm = result.data;
+                this.fileList=result.data;
+
+                const {data} = await this.$http.get("http://127.0.0.1:8084/type/allType");
+                this.typeList = data;
+
             },
             //对话框点击确定添加
             addCategory() {
                 // 表单预校验
                 this.$refs.addFormRef.validate(async valid => {
                     if (!valid) return;
-
-                    const result = await this.$http.post("http://127.0.0.1:8084/type/addType", this.typeForm);
+                    const result = await this.$http.post("http://127.0.0.1:8084/subType/addSubType", this.subTypeForm);
                     console.log(result);
+                    this.subTypeId = result.data.id;
+                    this.$refs.uploadRef.submit();
                     if (result.status !== 200)
                         return this.$message.error("添加类型失败");
                     this.$message.success("添加类型成功");
+                    this.$refs.uploadRef.clearFiles();
                     this.$refs.addFormRef.resetFields();
                     this.addDialogVisible = false;
-                    this.getTypeList();
+                    this.getSubTypeList();
                 });
             },
             //对话框点击确定修改
-            updateCategory() {
+            updateSubCategory() {
                 // 表单预校验
                 this.$refs.editFormRef.validate(async valid => {
                     if (!valid) return;
 
-                    console.log(this.type);
+                    console.log(this.subTypeForm);
 
-                    const result = await this.$http.post("http://127.0.0.1:8084/type/updateType", this.type);
+                    const result = await this.$http.post("http://127.0.0.1:8084/subType/updateType", this.type);
                     console.log(result);
                     if (result.status !== 200)
                         return this.$message.error("修改类型失败");
                     this.$message.success("修改类型成功");
                     this.$refs.editFormRef.resetFields();
                     this.editDialogVisible = false;
-                    this.getTypeList();
+                    this.getSubTypeList();
                 });
             },
 
 
-            async getTypeList() {
+            async getSubTypeList() {
                 const result = await this.$http.get("http://127.0.0.1:8084/subType/allSubType", {params: this.queryInfo});
                 console.log(result);
                 if (result.status !== 200) {
                     return this.$message.error("获取商品类型信息失败")
                 }
-                this.typeList = result.data.content;
+                this.subTypeList = result.data.content;
                 this.total = result.data.totalElements;
             },
 
@@ -275,7 +321,7 @@
                 this.viewDialogVisible = true;
                 const result = await this.$http.get("http://localhost:8084/subType/querySubType", {params: {id: row.id}});
                 console.log(result);
-                this.type = result.data;
+                this.subType = result.data;
             },
 
             async deleteType(row) {
@@ -291,9 +337,9 @@
 
                 if (result !== 'confirm')
                     return this.$message.info("取消删除");
-                const {data} = await this.$http.get("http://127.0.0.1:8084/type/deleteType", {params: {id: row.id}});
+                const {data} = await this.$http.get("http://127.0.0.1:8084/subType/deleteSubType", {params: {id: row.id}});
                 if (data === true) {
-                    this.getTypeList();
+                    this.getSubTypeList();
                     return this.$message.success("删除成功");
                 }
                 return this.$message.error("删除失败");
@@ -306,14 +352,13 @@
                 const file = params.file;
                 // 调oss api 上传图片
                 put(fileName, file).then(async result => {
-                    this.images.url = result.url;
-                    this.images.name = result.name;
-                    const goods = {};
-                    goods.id = this.goodsId;
-                    this.images.goods = goods;
-                    const res = await this.$http.post(
-                        "http://localhost:8084/images/addImages",
-                        this.images);
+                    const imageUrl = result.url;
+                    const res = await this.$http.get("http://localhost:8084/subType/updateImages", {
+                        params: {
+                            id: this.subTypeId,
+                            imageUrl: imageUrl
+                        }
+                    });
                     console.log(res);
                 });
             },

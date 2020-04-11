@@ -55,6 +55,7 @@
         <!--添加商品类型对话框-->
         <el-dialog
                 title="添加商品子类型"
+                :before-close="addDialogClosed"
                 :visible.sync="addDialogVisible"
                 width="50%">
             <!--主体内容区域-->
@@ -84,7 +85,7 @@
                                :http-request="upLoadImages"
                                :multiple="true"
                                :auto-upload="false"
-                               :limit=1
+                               :limit=4
                                :file-list="fileList">
                         <i class="el-icon-plus"/>
                         <div slot="tip">只能上传1张格式为jpg/png文件，且不超过500kb</div>
@@ -101,13 +102,14 @@
         </el-dialog>
         <!--编辑商品类型对话框-->
         <el-dialog
-                title="添加商品子类型"
+                title="修改商品子类型"
+                :before-close="editDialogClosed"
                 :visible.sync="editDialogVisible"
                 width="50%">
             <!--主体内容区域-->
             <el-form :model="subTypeForm" :rules="subTypeFormRules" ref="editFormRef" label-width="100px">
                 <el-form-item label="父类型名称" prop="type">
-                    <el-select v-model="subTypeForm.type.name"
+                    <el-select v-model="subTypeForm.type"
                                value-key="id"
                                filterable
                                placeholder="请选择商品父类型">
@@ -124,6 +126,7 @@
                 </el-form-item>
                 <el-form-item label="子类型图片">
                     <el-upload action="#"
+                               :before-remove="imagesRemove"
                                list-type="picture-card"
                                ref="uploadRef"
                                :on-remove="handleRemove"
@@ -149,6 +152,7 @@
         <!--查看商品详细信息对话框-->
         <el-dialog
                 title="查看商品子类型"
+                :before-close="viewDialogClosed"
                 :visible.sync="viewDialogVisible"
                 width="50%">
             <!--主体内容区域-->
@@ -161,7 +165,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
+                <el-button type="primary" @click="viewDialogClosed">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -217,6 +221,7 @@
                 dialogVisible: false,
                 fileList: [],
                 images: {},
+                image: {url: ''},
 
             };
         },
@@ -252,6 +257,7 @@
                 this.addDialogVisible = false;
             },
             editDialogClosed() {
+                this.fileList = [];
                 this.$refs.uploadRef.clearFiles();
                 this.$refs.editFormRef.resetFields();
                 this.editDialogVisible = false;
@@ -263,7 +269,14 @@
                 const result = await this.$http.get("http://localhost:8084/subType/querySubType", {params: {id: row.id}});
                 console.log(result);
                 this.subTypeForm = result.data;
-                this.fileList=result.data;
+
+                if (result.data.imageUrl !== null) {
+                    const imageObject = {};
+                    imageObject.url = result.data.imageUrl;
+                    imageObject.id = result.data.id;
+                    this.fileList.push(imageObject);
+                }
+                console.log(this.fileList)
 
                 const {data} = await this.$http.get("http://127.0.0.1:8084/type/allType");
                 this.typeList = data;
@@ -284,7 +297,7 @@
                     this.$refs.uploadRef.clearFiles();
                     this.$refs.addFormRef.resetFields();
                     this.addDialogVisible = false;
-                    this.getSubTypeList();
+                    await this.getSubTypeList();
                 });
             },
             //对话框点击确定修改
@@ -294,15 +307,18 @@
                     if (!valid) return;
 
                     console.log(this.subTypeForm);
-
-                    const result = await this.$http.post("http://127.0.0.1:8084/subType/updateType", this.type);
+                    this.$refs.uploadRef.submit();
+                    const result = await this.$http.post("http://127.0.0.1:8084/subType/updateSubType", this.subTypeForm);
                     console.log(result);
+                    this.subTypeId = result.data.id;
+
                     if (result.status !== 200)
                         return this.$message.error("修改类型失败");
                     this.$message.success("修改类型成功");
+                    this.fileList = [];
                     this.$refs.editFormRef.resetFields();
                     this.editDialogVisible = false;
-                    this.getSubTypeList();
+                    await this.getSubTypeList();
                 });
             },
 
@@ -323,6 +339,10 @@
                 console.log(result);
                 this.subType = result.data;
             },
+            viewDialogClosed() {
+                this.fileList = [];
+                this.viewDialogVisible = false;
+            },
 
             async deleteType(row) {
                 // 弹框再次确认
@@ -339,7 +359,7 @@
                     return this.$message.info("取消删除");
                 const {data} = await this.$http.get("http://127.0.0.1:8084/subType/deleteSubType", {params: {id: row.id}});
                 if (data === true) {
-                    this.getSubTypeList();
+                    await this.getSubTypeList();
                     return this.$message.success("删除成功");
                 }
                 return this.$message.error("删除失败");
@@ -362,9 +382,27 @@
                     console.log(res);
                 });
             },
+            async imagesRemove() {
+                // 弹框再次确认
+                await this.$confirm('是否确认删除此图片？', '提示', {
+                    confirmButtonText: '确认',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                });
+            },
+
             // 删除待上传文件图片 file为被删除的文件 fileList是剩下的文件列表
-            handleRemove(file, fileList) {
+            async handleRemove(file, fileList) {
                 console.log(file, fileList);
+                const {data} = await this.$http.get("http://127.0.0.1:8084/subType/deleteImage",
+                    {params: {id: file.id}});
+                this.subTypeForm.imageUrl = null;
+                console.log(data);
+                if (data === true) {
+                    this.$message.success("删除成功");
+                    return true;
+                }
+                this.$message.error("删除失败");
             },
             handlePictureCardPreview(file) {
                 this.dialogImageUrl = file.url;

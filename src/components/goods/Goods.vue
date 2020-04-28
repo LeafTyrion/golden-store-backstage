@@ -348,7 +348,7 @@
                     this.$refs.uploadRef.clearFiles();
                     this.$refs.addFormRef.resetFields();
                     this.addDialogVisible = false;
-                    this.getGoodsList();
+                    await this.getGoodsList();
                 });
             },
             //对话框点击取消
@@ -461,8 +461,9 @@
                     this.$refs.uploadRef.clearFiles();
                     this.$refs.editFormRef.resetFields();
                     this.fileList = [];
-                    this.editDialogVisible = false;
-                    this.getGoodsList();
+                    this.cascaderValue = [];
+                        this.editDialogVisible = false;
+                    await this.getGoodsList();
                 });
             },
             editDialogClosed() {
@@ -489,7 +490,7 @@
                     return this.$message.info("取消删除");
                 const {data} = await this.$http.get("http://127.0.0.1:8084/goods/deleteGoods", {params: {id: row.id}});
                 if (data === true) {
-                    this.getGoodsList();
+                    await this.getGoodsList();
                     return this.$message.success("删除成功");
                 }
                 return this.$message.error("删除失败");

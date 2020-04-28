@@ -36,13 +36,14 @@ const routes = [
             {path: '/goods', component: Goods},
             {path: '/category', component: Category},
             {path: '/orders', component: Orders},
-            {path:'/subCategory', component: SubCategory},
+            {path: '/subCategory', component: SubCategory},
         ]
     },
 
 ];
 
 const router = new VueRouter({
+    mode: 'history',
     routes
 });
 

@@ -1,13 +1,6 @@
 let OSS = require('ali-oss');
 
-// 阿里云OSS
-export let client = new OSS({
-    region: 'oss-cn-chengdu',
-    accessKeyId: 'LTAI4FeDxmH2c3hnbdwEb9QC',
-    accessKeySecret: 'dCvVuIkbAlqaIUjOtnL6dPLrijQfUR',
-    bucket: 'tachikoma',
-    secure: true
-});
+
 
 //上传
 export async function put(filePath, file) {

@@ -15,6 +15,13 @@
                         <el-button slot="append" icon="el-icon-search" @click="getOrdersList"></el-button>
                     </el-input>
                 </el-col>
+                <el-radio-group v-model="queryInfo.status" size="medium" @change="statusChange">
+                    <el-radio-button label="全部"></el-radio-button>
+                    <el-radio-button label="未处理"></el-radio-button>
+                    <el-radio-button label="备货中"></el-radio-button>
+                    <el-radio-button label="配送中"></el-radio-button>
+                    <el-radio-button label="已完成"></el-radio-button>
+                </el-radio-group>
             </el-row>
             <!--列表区域-->
             <el-table :data="ordersList" border stripe>
@@ -143,7 +150,9 @@
                     page: 1,
                     size: 10,
                     query: '',
+                    status: '全部',
                 },
+                total: 0,
                 // 订单状态
                 orderStatus: [
                     {
@@ -156,7 +165,6 @@
                         value: '已完成',
                     }
                 ],
-                total: 0,
 
                 orders: {},
                 ordersList: [],
@@ -253,6 +261,15 @@
                 }
                 return this.$message.error("删除失败");
             },
+            async statusChange(value) {
+                if (value === "全部") {
+                    await this.getOrdersList();
+                } else {
+                    const result = await this.$http.get("http://localhost:8085/orders/allOrdersByStatus", {params: this.queryInfo});
+                    console.log(result);
+                    this.ordersList=result.data.content;
+                }
+            }
 
 
         },

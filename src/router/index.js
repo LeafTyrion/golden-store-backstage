@@ -10,6 +10,8 @@ import Orders from "../components/orders/Orders";
 import Test from "../components/Test";
 import Users from "../components/user/Users";
 import SubCategory from "../components/category/SubCategory";
+import Opinion from "../components/information/Opinion";
+import Data from "../components/information/Data";
 
 Vue.use(VueRouter);
 
@@ -37,6 +39,9 @@ const routes = [
             {path: '/category', component: Category},
             {path: '/orders', component: Orders},
             {path: '/subCategory', component: SubCategory},
+            {path: '/opinion', component: Opinion},
+            {path: '/data', component: Data},
+
         ]
     },
 

@@ -119,7 +119,7 @@
 
 <script>
     export default {
-        name: "Users",
+        name: "Admin",
         data() {
             //校验规则 手机号、密码、确认密码
             const checkMobile = (rule, value, callback) => {

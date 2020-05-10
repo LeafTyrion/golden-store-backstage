@@ -33,12 +33,12 @@
                     <!--一级菜单-->
                     <el-submenu
                             :index="name"
-                            v-for="{id, name, submenuList} in menuList"
+                            v-for="{id, name, submenuList,icon} in menuList"
                             :key="id">
                         <!--一级菜单模板区域-->
                         <template slot="title">
                             <!--图标-->
-                            <i class="el-icon-location"/>
+                            <i :class="icon"/>
                             <span>{{name}}</span>
                         </template>
                         <!--二级菜单-->
@@ -50,7 +50,7 @@
                             <!--二级菜单模板区域-->
                             <template slot="title">
                                 <!--图标-->
-                                <i class="el-icon-menu"/>
+                                <i :class="subItem.icon"/>
                                 <span>{{subItem.name}}</span>
                             </template>
                         </el-menu-item>

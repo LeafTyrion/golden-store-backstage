@@ -27,6 +27,7 @@
 
 <script>
     export default {
+        name: "Login",
         data() {
             return {
                 // 用户名密码双向数据绑定

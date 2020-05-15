@@ -3,19 +3,12 @@
         <!--面包屑导航-->
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item :to="{ path: '/index' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>活动管理</el-breadcrumb-item>
-            <el-breadcrumb-item>活动列表</el-breadcrumb-item>
-            <el-breadcrumb-item>活动详情</el-breadcrumb-item>
+            <el-breadcrumb-item>用户管理</el-breadcrumb-item>
+            <el-breadcrumb-item>管理员管理</el-breadcrumb-item>
         </el-breadcrumb>
         <!--卡片视图区域-->
         <el-card class="box-card">
             <el-row :gutter="20">
-                <!--搜索区域-->
-                <el-col :span="7">
-                    <el-input placeholder="请输入内容">
-                        <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
-                    </el-input>
-                </el-col>
                 <!--按钮区域-->
                 <el-col :span="4">
                     <el-button type="primary" @click="addDialogVisible=true">添加管理员</el-button>

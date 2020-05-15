@@ -8,14 +8,6 @@
         </el-breadcrumb>
         <!--卡片视图区域-->
         <el-card class="box-card">
-            <el-row :gutter="20">
-                <!--搜索区域-->
-                <el-col :span="7">
-                    <el-input placeholder="请输入内容" v-model="queryInfo.query">
-                        <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
-                    </el-input>
-                </el-col>
-            </el-row>
             <!--列表区域-->
             <el-table :data="userList" border stripe>
                 <el-table-column type="index" label="#"/>
@@ -60,6 +52,7 @@
                 <el-form-item label="用户头像：">
                     <el-image :src="user.avatarUrl"/>
                 </el-form-item>
+                <el-form-item label="用户昵称：">{{user.nickName}}</el-form-item>
                 <el-table :data="user.addressVOList">
                     <el-table-column property="id" label="编号" width="50"/>
                     <el-table-column property="userName" label="收货人" width="70"/>

@@ -43,7 +43,7 @@
 
         <!--查看用户信息对话框-->
         <el-dialog
-                title="查看用户详细信息"
+                title="查看用户意见反馈"
                 :visible.sync="viewDialogVisible"
                 width="65%">
             <!--主体内容区域-->

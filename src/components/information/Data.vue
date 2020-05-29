@@ -33,7 +33,7 @@
                 <div slot="header" class="clearfix">
                     <span>累计收益</span>
                 </div>
-                <div class="big_content">￥ {{dataInfo.allTrade}}</div>
+                <div class="big_content">￥ {{dataInfo.allReturn}}</div>
             </el-card>
 
             <el-card class="box-card">

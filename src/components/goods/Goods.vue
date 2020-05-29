@@ -25,6 +25,10 @@
                 <el-table-column type="index" label="#"/>
                 <el-table-column label="商品编号" prop="id"/>
                 <el-table-column label="商品名称" prop="name"/>
+                <el-table-column label="商品成本价" prop="costPrice"/>
+                <el-table-column label="商品平台价" prop="tradePrice"/>
+                <el-table-column label="商品零售价" prop="price"/>
+                <el-table-column label="商品库存" prop="stock"/>
                 <el-table-column label="上架状态" width="90px" prop="sell">
                     <template slot-scope="scope">
                         <el-switch v-model="scope.row.sell" @change="goodsStateChanged(scope.row)"></el-switch>

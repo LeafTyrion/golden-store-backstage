@@ -9,23 +9,19 @@
         <!--卡片视图区域-->
         <el-card class="box-card">
             <!--列表区域-->
-            <el-table :data="userList" border stripe>
+            <el-table :data="opinionList" border stripe>
                 <el-table-column type="index" label="#"/>
-                <el-table-column label="openID" prop="openId" width="230px"/>
-                <el-table-column label="头像" width="80px">
-                    <template slot-scope="scope">
-                        <el-image :src="scope.row.avatarUrl"/>
-                    </template>
-                </el-table-column>
-                <el-table-column label="昵称" prop="nickName" width="100px"/>
+                <el-table-column label="意见编号" prop="id"/>
+                <el-table-column label="意见内容" prop="text"/>
+
                 <el-table-column label="操作" width="120px">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" content="查看详情" placement="top" :enterable="false">
-                            <el-button @click="viewUser(scope.row)" type="warning" icon="el-icon-notebook-2"
+                            <el-button @click="viewOpinion(scope.row)" type="warning" icon="el-icon-notebook-2"
                                        size="mini"/>
                         </el-tooltip>
                         <el-tooltip effect="dark" content="删除" placement="top" :enterable="false">
-                            <el-button @click="deleteUser(scope.row)" type="danger" icon="el-icon-delete"
+                            <el-button @click="deleteOpinion(scope.row)" type="danger" icon="el-icon-delete"
                                        size="mini"/>
                         </el-tooltip>
                     </template>
@@ -47,13 +43,13 @@
                 :visible.sync="viewDialogVisible"
                 width="65%">
             <!--主体内容区域-->
-            <el-form :model="user" label-width="150px">
-                <el-form-item label="用户编号：">{{user.id}}</el-form-item>
+            <el-form :model="opinion" label-width="150px">
+                <el-form-item label="用户编号：">{{opinion.user.id}}</el-form-item>
                 <el-form-item label="用户头像：">
-                    <el-image :src="user.avatarUrl"/>
+                    <el-image :src="opinion.user.avatarUrl"/>
                 </el-form-item>
-                <el-form-item label="用户昵称：">{{user.nickName}}</el-form-item>
-                <el-form-item label="用户意见：" prop="detail">好好努力！天天向上！</el-form-item>
+                <el-form-item label="用户昵称：">{{opinion.user.nickName}}</el-form-item>
+                <el-form-item label="用户意见：">{{opinion.text}}</el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="viewDialogVisible=false">确 定</el-button>
@@ -72,42 +68,46 @@
                 queryInfo: {
                     page: 1,
                     size: 10,
-                    query: '',
                 },
-                user:{},
-                userList: [],
-                addressList:[],
+                opinion: {
+                    user: {
+                        id: null,
+                        avatarUrl: null,
+                        nickName: null,
+                    }
+                },
+                opinionList: [],
                 total: 0,
                 // 控制对话框打开关闭
                 viewDialogVisible: false
             }
         },
         created() {
-            this.getUserList();
+            this.getOpinionList();
         },
         methods: {
-            async getUserList() {
-                const result = await this.$http.get("http://127.0.0.1:8083/user/allUser", {params: this.queryInfo});
+            async getOpinionList() {
+                const result = await this.$http.get("http://localhost:8085/wx-opinions/allOpinions", {params: this.queryInfo});
                 console.log(result);
                 if (result.status !== 200) {
-                    return this.$message.error("获取用户列表失败")
+                    return this.$message.error("获取意见列表失败")
                 }
-                this.userList = result.data.content;
+                this.opinionList = result.data.content;
                 this.total = result.data.totalElements;
             },
 
-            async viewUser(row){
-                this.viewDialogVisible=true;
-                const result = await this.$http.get("http://127.0.0.1:8083/user/getUser", {params: {id:row.id}});
+            async viewOpinion(row) {
+                this.viewDialogVisible = true;
+                const result = await this.$http.get("http://localhost:8085/wx-opinions/queryOpinion", {params: {id: row.id}});
                 console.log(result);
                 if (result.status !== 200) {
-                    return this.$message.error("获取用户信息失败")
+                    return this.$message.error("获取意见信息失败")
                 }
-                this.user=result.data;
+                this.opinion = result.data;
             },
-            async deleteUser(row){
+            async deleteOpinion(row) {
                 // 弹框再次确认
-                const result = await this.$confirm('是否确认删除此用户？', '提示', {
+                const result = await this.$confirm('是否确认删除此意见？', '提示', {
                         confirmButtonText: '确认',
                         cancelButtonText: '取消',
                         type: 'warning'
@@ -118,9 +118,9 @@
 
                 if (result !== 'confirm')
                     return this.$message.info("取消删除");
-                const {data} = await this.$http.get("http://127.0.0.1:8083/user/deleteUser", {params: {id: row.id}});
+                const {data} = await this.$http.get("http://localhost:8085/wx-opinions/deleteOpinion", {params: {id: row.id}});
                 if (data === true) {
-                    await this.getUserList();
+                    await this.getOpinionList();
                     return this.$message.success("删除成功");
                 }
                 return this.$message.error("删除失败");
@@ -129,12 +129,12 @@
             // 监听pagesize每页显示的条数改变事件
             handleSizeChange(newSize) {
                 this.queryInfo.size = newSize;
-                this.getUserList();
+                this.getOpinionList();
             },
             // 监听页码值改变事件
             handleCurrentChange(newPage) {
                 this.queryInfo.page = newPage;
-                this.getUserList();
+                this.getOpinionList();
             },
 
         }
